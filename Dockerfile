@@ -21,6 +21,11 @@ RUN apt-get update \
 
 WORKDIR /app
 
+# Fork SergioSantama: heap explícito para el build web — vite/rolldown mueren con
+# ERR_WORKER_OUT_OF_MEMORY en VPS compartido con la pila n8n/Baserow/PocketBase
+# (observado 2026-10-16, build upstream sin esta línea).
+ENV NODE_OPTIONS="--max-old-space-size=3072"
+
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json eslint.config.js ./
 COPY apps ./apps
 COPY packages ./packages
