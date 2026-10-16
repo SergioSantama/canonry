@@ -48,9 +48,12 @@ WORKDIR /app
 COPY --from=build /prod/app ./
 COPY docker/entrypoint.sh /usr/local/bin/canonry-entrypoint
 
-RUN chmod +x /usr/local/bin/canonry-entrypoint \
-  && rm -rf /usr/local/lib/node_modules/npm \
-  && rm -f /usr/local/bin/npm /usr/local/bin/npx
+# Fork SergioSantama (2026-10-16): conservamos npm en runtime. Upstream lo elimina
+# (los upgrade-notices mandan al agente a mover de imagen, no a `npm install -g`), pero
+# el instalador del feature Backlinks (`POST /backlinks/install` -> installDuckdb)
+# hace `spawn npm install @duckdb/node-api --prefix <pluginDir>` y sin npm falla con
+# spawn npm ENOENT (observado en el contenedor de produccion). Coste: ~+60 MB de imagen.
+RUN chmod +x /usr/local/bin/canonry-entrypoint
 
 EXPOSE 4100
 
